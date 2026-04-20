@@ -22,7 +22,7 @@ async function generateArticle(posts) {
         photoCount++;
         parts.push(`画像: [写真${photoCount}]`);
       }
-      if (p.location_lat) parts.push(`場所: 緯度${p.location_lat} 経度${p.location_lng}`);
+      if (p.location_lat) parts.push(`場所: https://www.google.com/maps?q=${p.location_lat},${p.location_lng}`);
       if (p.emotion) parts.push(`感情: ${p.emotion}`);
       return parts.join('\n');
     })
