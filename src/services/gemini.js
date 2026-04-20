@@ -28,12 +28,12 @@ async function generateArticle(posts) {
     })
     .join('\n\n---\n\n');
 
-  const imageRule = `
+  const imageRule = photoCount > 0 ? `
 # 画像プレースホルダー（必須）
-本文中の画像が挿入されるべき位置に、必ず「📷 [写真N]」の形式で挿入すること。
+ログ中の「画像: [写真N]」が登場する位置の近くに、必ず「📷 [写真N]」の形式で本文中に挿入すること。
 例：📷 [写真1]、📷 [写真2]
-これはnoteに貼り付ける際の位置指示として使用する。
-`;
+存在しない写真番号は絶対に作らないこと。写真は全部で${photoCount}枚。
+` : '';
 
   const prompt = promptTemplate.split('{logs}').join(logsText) + imageRule;
 
