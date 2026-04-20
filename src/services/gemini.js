@@ -48,7 +48,11 @@ async function generateArticle(posts) {
   const prompt = promptTemplate.split('{logs}').join(logsText) + imageRule + titleRule;
 
   const result = await model.generateContent(prompt);
-  return result.response.text();
+  return result.response.text()
+    .replace(/^【タイトル】\n?/m, '')
+    .replace(/^【本文】\n?/m, '')
+    .replace(/^【ハッシュタグ】\n?/m, '')
+    .trim();
 }
 
 async function generateThreadText(posts, article) {
