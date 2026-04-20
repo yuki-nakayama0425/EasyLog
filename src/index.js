@@ -15,7 +15,7 @@ app.post('/webhook', (req, res) => {
   res.sendStatus(200);
 });
 
-app.use('/generate', generateRoute);
+app.use('/generate', generateRoute(bot));
 
 app.get('/health', (req, res) => res.json({ status: 'ok' }));
 
@@ -26,10 +26,6 @@ cron.schedule('0 22 * * *', async () => {
     const res = await fetch(`http://localhost:${PORT}/generate`, { method: 'POST' });
     const data = await res.json();
     console.log('Article generated:', data.success);
-
-    if (data.article && process.env.TELEGRAM_USER_ID) {
-      await bot.telegram.sendMessage(process.env.TELEGRAM_USER_ID, data.article);
-    }
   } catch (err) {
     console.error('Cron error:', err);
   }
