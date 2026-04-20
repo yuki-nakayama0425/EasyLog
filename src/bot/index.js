@@ -10,6 +10,7 @@ bot.start((ctx) => {
 bot.on('text', async (ctx) => {
   const userId = String(ctx.from.id);
   const text = ctx.message.text;
+  if (text.startsWith('/')) return;
 
   const { error } = await supabase.from('posts').insert({
     user_id: userId,
