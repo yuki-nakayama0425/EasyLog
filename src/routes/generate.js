@@ -26,11 +26,12 @@ async function runGenerate(bot) {
 
   const userId = process.env.TELEGRAM_USER_ID;
   if (bot && userId) {
-    const photoPosts = posts.filter((p, i) => p.image_url ? { url: p.image_url, index: i + 1 } : null)
-      .map((p, i) => ({ url: p.image_url, label: `写真${i + 1}` }));
-
-    for (const photo of photoPosts) {
-      await bot.telegram.sendPhoto(userId, photo.url, { caption: `📷 ${photo.label}` });
+    let photoCount = 0;
+    for (const post of posts) {
+      if (post.file_id) {
+        photoCount++;
+        await bot.telegram.sendPhoto(userId, post.file_id, { caption: `📷 写真${photoCount}` });
+      }
     }
 
     await bot.telegram.sendMessage(userId, article);

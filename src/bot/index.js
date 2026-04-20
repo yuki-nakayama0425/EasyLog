@@ -1,6 +1,5 @@
 const { Telegraf } = require('telegraf');
 const supabase = require('../db/supabase');
-const axios = require('axios');
 
 const bot = new Telegraf(process.env.TELEGRAM_BOT_TOKEN);
 
@@ -31,12 +30,10 @@ bot.on('photo', async (ctx) => {
   const photos = ctx.message.photo;
   const fileId = photos[photos.length - 1].file_id;
 
-  const fileUrl = await ctx.telegram.getFileLink(fileId);
-
   const { error } = await supabase.from('posts').insert({
     user_id: userId,
     text: caption,
-    image_url: fileUrl.href,
+    file_id: fileId,
   });
 
   if (error) {
