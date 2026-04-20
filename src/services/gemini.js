@@ -10,7 +10,7 @@ const promptTemplate = fs.readFileSync(
 );
 
 function getTripDay() {
-  const start = new Date('2026-01-28T00:00:00+09:00');
+  const start = new Date(`${process.env.TRIP_START_DATE}T00:00:00+09:00`);
   const now = new Date();
   const diffMs = now - start;
   return Math.floor(diffMs / (1000 * 60 * 60 * 24)) + 1;
