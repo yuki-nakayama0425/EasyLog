@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const supabase = require('../db/supabase');
-const { generateArticle } = require('../services/gemini');
+const { generateArticle, generateThreadText } = require('../services/gemini');
 
 async function runGenerate(bot) {
   const today = new Date();
@@ -24,6 +24,8 @@ async function runGenerate(bot) {
   });
   if (saveError) throw saveError;
 
+  const threadText = await generateThreadText(posts, article);
+
   const userId = process.env.TELEGRAM_USER_ID;
   if (bot && userId) {
     let photoCount = 0;
@@ -35,9 +37,10 @@ async function runGenerate(bot) {
     }
 
     await bot.telegram.sendMessage(userId, article);
+    await bot.telegram.sendMessage(userId, `━━━━━━━━━━━━━━━\n🐦 X/スレッド用テキスト\n━━━━━━━━━━━━━━━\n${threadText}`);
   }
 
-  return { success: true, article };
+  return { success: true, article, threadText };
 }
 
 const createRouter = (bot) => {
