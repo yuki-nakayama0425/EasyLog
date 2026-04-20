@@ -17,7 +17,7 @@ function getTripDay() {
 }
 
 async function generateArticle(posts) {
-  const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
+  const model = genAI.getGenerativeModel({ model: 'gemini-2.5-pro' });
   const tripDay = getTripDay();
 
   let photoCount = 0;
