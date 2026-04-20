@@ -10,6 +10,7 @@ bot.start((ctx) => {
 bot.on('text', async (ctx) => {
   const userId = String(ctx.from.id);
   const text = ctx.message.text;
+  console.log('[text handler]', { text, hasPhoto: !!ctx.message.photo });
 
   const { error } = await supabase.from('posts').insert({
     user_id: userId,
@@ -27,6 +28,7 @@ bot.on('text', async (ctx) => {
 bot.on('photo', async (ctx) => {
   const userId = String(ctx.from.id);
   const caption = ctx.message.caption || '';
+  console.log('[photo handler]', { caption, fileId: ctx.message.photo?.slice(-1)[0]?.file_id });
   const photos = ctx.message.photo;
   const fileId = photos[photos.length - 1].file_id;
 
