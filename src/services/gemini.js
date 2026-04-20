@@ -28,7 +28,14 @@ async function generateArticle(posts) {
     })
     .join('\n\n---\n\n');
 
-  const prompt = promptTemplate.replace('{logs}', logsText);
+  const imageRule = `
+# 画像プレースホルダー（必須）
+本文中の画像が挿入されるべき位置に、必ず「📷 [写真N]」の形式で挿入すること。
+例：📷 [写真1]、📷 [写真2]
+これはnoteに貼り付ける際の位置指示として使用する。
+`;
+
+  const prompt = promptTemplate.replace('{logs}', logsText) + imageRule;
 
   const result = await model.generateContent(prompt);
   return result.response.text();
