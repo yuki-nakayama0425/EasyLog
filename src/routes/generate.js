@@ -40,7 +40,7 @@ async function runGenerate(bot) {
   return { success: true, article };
 }
 
-module.exports = (bot) => {
+const createRouter = (bot) => {
   router.post('/', async (req, res) => {
     try {
       const result = await runGenerate(bot);
@@ -63,3 +63,6 @@ module.exports = (bot) => {
 
   return router;
 };
+
+module.exports = createRouter;
+module.exports.runGenerate = runGenerate;

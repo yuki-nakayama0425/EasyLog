@@ -3,6 +3,7 @@ const express = require('express');
 const cron = require('node-cron');
 const bot = require('./bot');
 const generateRoute = require('./routes/generate');
+const { runGenerate } = require('./routes/generate');
 
 const app = express();
 app.use(express.json());
@@ -16,6 +17,19 @@ app.post('/webhook', (req, res) => {
 });
 
 app.use('/generate', generateRoute(bot));
+
+bot.command('generate', async (ctx) => {
+  const allowedId = process.env.TELEGRAM_USER_ID;
+  if (String(ctx.from.id) !== allowedId) return;
+  await ctx.reply('記事を生成中です...');
+  try {
+    const result = await runGenerate(bot);
+    if (result.message) await ctx.reply(result.message);
+  } catch (err) {
+    console.error('Generate command error:', err);
+    await ctx.reply('生成に失敗しました。');
+  }
+});
 
 app.get('/health', (req, res) => res.json({ status: 'ok' }));
 
