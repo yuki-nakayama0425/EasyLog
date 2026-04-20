@@ -1,42 +1,34 @@
 const { GoogleGenerativeAI } = require('@google/generative-ai');
+const fs = require('fs');
+const path = require('path');
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+
+const promptTemplate = fs.readFileSync(
+  path.join(__dirname, '../../docs/生成プロンプトv1'),
+  'utf8'
+);
 
 async function generateArticle(posts) {
   const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
 
+  let photoCount = 0;
   const logsText = posts
-    .map((p, i) => {
+    .map((p) => {
       const parts = [];
       if (p.created_at) parts.push(`日時: ${new Date(p.created_at).toLocaleString('ja-JP')}`);
       if (p.text) parts.push(`内容: ${p.text}`);
-      if (p.image_url) parts.push(`画像ID: [写真${i + 1}]`);
+      if (p.file_id) {
+        photoCount++;
+        parts.push(`画像: [写真${photoCount}]`);
+      }
       if (p.location_lat) parts.push(`場所: 緯度${p.location_lat} 経度${p.location_lng}`);
       if (p.emotion) parts.push(`感情: ${p.emotion}`);
       return parts.join('\n');
     })
     .join('\n\n---\n\n');
 
-  const prompt = `以下は1日の旅行ログです。これをもとに、note風の旅行記を作成してください。
-
-要件：
-・時系列で整理
-・自然なストーリーにする
-・感情を補完する
-・読者が旅行したくなる内容
-・エモい文章
-・画像IDがある場合は、文章の中の適切な位置に「📷 [写真N]」という形式でそのまま挿入すること
-
-構成：
-・タイトル
-・導入文
-・本文（画像プレースホルダーを適切な位置に含める）
-・まとめ
-・ハッシュタグ
-
----
-
-${logsText}`;
+  const prompt = promptTemplate.replace('{logs}', logsText);
 
   const result = await model.generateContent(prompt);
   return result.response.text();
