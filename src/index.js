@@ -26,8 +26,8 @@ app.get('/debug/posts', async (req, res) => {
   const { data, error } = await supabase
     .from('posts')
     .select('id, text, file_id, created_at')
-    .gte('created_at', today.toISOString())
-    .order('created_at', { ascending: true });
+    .order('created_at', { ascending: false })
+    .limit(20);
   if (error) return res.status(500).json({ error: error.message });
   res.json({ today: today.toISOString(), count: data.length, posts: data });
 });
