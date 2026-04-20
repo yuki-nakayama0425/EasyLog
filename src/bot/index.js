@@ -7,10 +7,10 @@ bot.start((ctx) => {
   ctx.reply('EasyLogへようこそ！\nテキスト・画像・位置情報を送るだけで、毎晩旅行記を自動生成します。');
 });
 
-bot.on('text', async (ctx) => {
+bot.on('text', async (ctx, next) => {
   const userId = String(ctx.from.id);
   const text = ctx.message.text;
-  if (text.startsWith('/')) return;
+  if (text.startsWith('/')) return next();
 
   const { error } = await supabase.from('posts').insert({
     user_id: userId,
