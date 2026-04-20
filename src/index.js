@@ -19,6 +19,19 @@ app.use('/generate', generateRoute(bot));
 
 app.get('/health', (req, res) => res.json({ status: 'ok' }));
 
+app.get('/debug/posts', async (req, res) => {
+  const supabase = require('./db/supabase');
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const { data, error } = await supabase
+    .from('posts')
+    .select('id, text, file_id, created_at')
+    .gte('created_at', today.toISOString())
+    .order('created_at', { ascending: true });
+  if (error) return res.status(500).json({ error: error.message });
+  res.json({ today: today.toISOString(), count: data.length, posts: data });
+});
+
 // 毎日22:00に記事生成
 cron.schedule('0 22 * * *', async () => {
   console.log('Running daily article generation...');

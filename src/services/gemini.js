@@ -35,7 +35,7 @@ async function generateArticle(posts) {
 これはnoteに貼り付ける際の位置指示として使用する。
 `;
 
-  const prompt = promptTemplate.replace('{logs}', logsText) + imageRule;
+  const prompt = promptTemplate.split('{logs}').join(logsText) + imageRule;
 
   console.log('=== LOGS SENT TO GEMINI ===');
   console.log(logsText);
