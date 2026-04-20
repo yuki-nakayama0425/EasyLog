@@ -9,8 +9,16 @@ const promptTemplate = fs.readFileSync(
   'utf8'
 );
 
+function getTripDay() {
+  const start = new Date('2026-01-28T00:00:00+09:00');
+  const now = new Date();
+  const diffMs = now - start;
+  return Math.floor(diffMs / (1000 * 60 * 60 * 24)) + 1;
+}
+
 async function generateArticle(posts) {
   const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
+  const tripDay = getTripDay();
 
   let photoCount = 0;
   const logsText = posts
@@ -35,7 +43,9 @@ async function generateArticle(posts) {
 存在しない写真番号は絶対に作らないこと。写真は全部で${photoCount}枚。
 ` : '';
 
-  const prompt = promptTemplate.split('{logs}').join(logsText) + imageRule;
+  const titleRule = `\n# TITLE PREFIX（必須）\nタイトルの先頭に必ず「【世界一周${tripDay}日目・国名】」をつけること。国名はログの内容から判断する。\n例：【世界一周83日目・スリランカ】コロンボで食べた安飯のこと\n`;
+
+  const prompt = promptTemplate.split('{logs}').join(logsText) + imageRule + titleRule;
 
   const result = await model.generateContent(prompt);
   return result.response.text();
