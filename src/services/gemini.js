@@ -37,10 +37,6 @@ async function generateArticle(posts) {
 
   const prompt = promptTemplate.split('{logs}').join(logsText) + imageRule;
 
-  console.log('=== LOGS SENT TO GEMINI ===');
-  console.log(logsText);
-  console.log('===========================');
-
   const result = await model.generateContent(prompt);
   return result.response.text();
 }
