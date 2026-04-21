@@ -37,7 +37,7 @@ async function runGenerate(bot) {
     }
 
     await bot.telegram.sendMessage(userId, article);
-    await bot.telegram.sendMessage(userId, `━━━━━━━━━━━━━━━\n🐦 X/スレッド用テキスト\n━━━━━━━━━━━━━━━\n${threadText}`);
+    await bot.telegram.sendMessage(userId, threadText);
   }
 
   return { success: true, article, threadText };
