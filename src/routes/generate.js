@@ -40,7 +40,7 @@ async function runGenerate(bot) {
 
     await bot.telegram.sendMessage(userId, article);
     await bot.telegram.sendMessage(userId, `📱 スレッド用（500文字以内）\n\n${threadText}`);
-    await bot.telegram.sendMessage(userId, `🐦 X用（280文字以内）\n\n${xText}`);
+    await bot.telegram.sendMessage(userId, `🐦 X用（140文字以内）\n\n${xText}`);
 
     try {
       const tweetResult = await postTweet(xText);
