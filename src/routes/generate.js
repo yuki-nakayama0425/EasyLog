@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const supabase = require('../db/supabase');
 const { generateArticle, generateThreadText } = require('../services/gemini');
+const { postTweet } = require('../services/twitter');
 
 async function runGenerate(bot) {
   const today = new Date();
@@ -38,6 +39,18 @@ async function runGenerate(bot) {
 
     await bot.telegram.sendMessage(userId, article);
     await bot.telegram.sendMessage(userId, threadText);
+
+    try {
+      const tweetResult = await postTweet(threadText);
+      if (tweetResult.success) {
+        await bot.telegram.sendMessage(userId, `✅ Xに自動投稿しました。\nhttps://x.com/i/web/status/${tweetResult.tweetId}`);
+      } else if (!tweetResult.skipped) {
+        await bot.telegram.sendMessage(userId, '⚠️ X投稿に失敗しました。手動で投稿してください。');
+      }
+    } catch (tweetErr) {
+      console.error('Twitter post error:', tweetErr);
+      await bot.telegram.sendMessage(userId, `⚠️ X投稿に失敗しました。\nエラー: ${tweetErr.message}`);
+    }
   }
 
   return { success: true, article, threadText };
