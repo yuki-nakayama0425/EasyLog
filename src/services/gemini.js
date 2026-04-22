@@ -59,7 +59,7 @@ async function generateThreadText(posts, article) {
   const model = genAI.getGenerativeModel({ model: 'gemini-2.5-pro' });
   const tripDay = getTripDay();
 
-  const prompt = `以下は世界一周${tripDay}日目の旅行記事と元のログです。これをもとにX（旧Twitter）の投稿用テキストを1つ作成してください。
+  const prompt = `以下は世界一周${tripDay}日目の旅行記事と元のログです。これをもとにスレッド（Threads）用の投稿テキストを1つ作成してください。
 
 # 元記事
 ${article}
@@ -76,4 +76,27 @@ ${article}
   return result.response.text();
 }
 
-module.exports = { generateArticle, generateThreadText };
+async function generateXText(posts, article) {
+  const model = genAI.getGenerativeModel({ model: 'gemini-2.5-pro' });
+  const tripDay = getTripDay();
+
+  const prompt = `以下は世界一周${tripDay}日目の旅行記事と元のログです。これをもとにX（旧Twitter）の投稿用テキストを1つ作成してください。
+
+# 元記事
+${article}
+
+# ルール
+- 【厳守】140文字以内（半角英数は1文字、日本語は1文字としてカウント）
+- その日の一番印象的な出来事を一言で
+- ハッシュタグは2〜3個（#世界一周 #旅 など）
+- 画像プレースホルダー（📷）は含めない
+- AIっぽい表現禁止（「〜だと感じました」「まさに〜」など）
+- 普通の人間がつぶやくような自然な口語体
+- URLは含めない`;
+
+  const result = await model.generateContent(prompt);
+  const text = result.response.text().trim();
+  return text.length > 140 ? text.slice(0, 137) + '...' : text;
+}
+
+module.exports = { generateArticle, generateThreadText, generateXText };

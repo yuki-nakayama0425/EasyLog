@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const supabase = require('../db/supabase');
-const { generateArticle, generateThreadText } = require('../services/gemini');
+const { generateArticle, generateThreadText, generateXText } = require('../services/gemini');
 const { postTweet } = require('../services/twitter');
 
 async function runGenerate(bot) {
@@ -26,6 +26,7 @@ async function runGenerate(bot) {
   if (saveError) throw saveError;
 
   const threadText = await generateThreadText(posts, article);
+  const xText = await generateXText(posts, article);
 
   const userId = process.env.TELEGRAM_USER_ID;
   if (bot && userId) {
@@ -38,10 +39,11 @@ async function runGenerate(bot) {
     }
 
     await bot.telegram.sendMessage(userId, article);
-    await bot.telegram.sendMessage(userId, threadText);
+    await bot.telegram.sendMessage(userId, `📱 スレッド用（500文字以内）\n\n${threadText}`);
+    await bot.telegram.sendMessage(userId, `🐦 X用（140文字以内）\n\n${xText}`);
 
     try {
-      const tweetResult = await postTweet(threadText);
+      const tweetResult = await postTweet(xText);
       if (tweetResult.success) {
         await bot.telegram.sendMessage(userId, `✅ Xに自動投稿しました。\nhttps://x.com/i/web/status/${tweetResult.tweetId}`);
       } else if (!tweetResult.skipped) {
