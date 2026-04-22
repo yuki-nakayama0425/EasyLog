@@ -18,6 +18,20 @@ app.post('/webhook', (req, res) => {
 
 app.use('/generate', generateRoute(bot));
 
+bot.command('xtest', async (ctx) => {
+  const allowedId = process.env.TELEGRAM_USER_ID;
+  if (String(ctx.from.id) !== allowedId) return;
+  await ctx.reply('Xへのテスト投稿を試みます...');
+  try {
+    const { postTweet } = require('./services/twitter');
+    const result = await postTweet('EasyLog テスト投稿 ' + new Date().toISOString());
+    await ctx.reply(`✅ 成功！\nhttps://x.com/i/web/status/${result.tweetId}`);
+  } catch (err) {
+    const fullError = JSON.stringify({ message: err.message, code: err.code, data: err.data }, null, 2);
+    await ctx.reply(`⚠️ 失敗:\n${fullError.slice(0, 500)}`);
+  }
+});
+
 bot.command('generate', async (ctx) => {
   const allowedId = process.env.TELEGRAM_USER_ID;
   if (String(ctx.from.id) !== allowedId) return;
