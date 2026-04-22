@@ -48,8 +48,10 @@ async function runGenerate(bot) {
         await bot.telegram.sendMessage(userId, '⚠️ X投稿に失敗しました。手動で投稿してください。');
       }
     } catch (tweetErr) {
-      console.error('Twitter post error:', tweetErr);
-      await bot.telegram.sendMessage(userId, `⚠️ X投稿に失敗しました。\nエラー: ${tweetErr.message}`);
+      const detail = tweetErr?.data?.detail || tweetErr?.data?.errors?.[0]?.message || tweetErr.message;
+      const code = tweetErr?.code || tweetErr?.data?.status || '';
+      console.error('Twitter post error:', JSON.stringify(tweetErr?.data || tweetErr.message));
+      await bot.telegram.sendMessage(userId, `⚠️ X投稿に失敗しました。\nコード: ${code}\n詳細: ${detail}`);
     }
   }
 
