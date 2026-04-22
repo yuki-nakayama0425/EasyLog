@@ -86,9 +86,9 @@ async function generateXText(posts, article) {
 ${article}
 
 # ルール
-- 【厳守】140文字以内（半角英数は1文字、日本語は1文字としてカウント）
-- その日の一番印象的な出来事を一言で
-- ハッシュタグは2〜3個（#世界一周 #旅 など）
+- 【厳守】280文字以内
+- その日の一番印象的な出来事を中心に
+- 最後にハッシュタグ2〜3個（#世界一周 #旅 など）
 - 画像プレースホルダー（📷）は含めない
 - AIっぽい表現禁止（「〜だと感じました」「まさに〜」など）
 - 普通の人間がつぶやくような自然な口語体
@@ -96,7 +96,7 @@ ${article}
 
   const result = await model.generateContent(prompt);
   const text = result.response.text().trim();
-  return text.length > 140 ? text.slice(0, 137) + '...' : text;
+  return text.length > 280 ? text.slice(0, 277) + '...' : text;
 }
 
 module.exports = { generateArticle, generateThreadText, generateXText };
