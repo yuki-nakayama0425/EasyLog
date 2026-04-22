@@ -16,9 +16,10 @@ async function postTweet(text) {
   const client = getClient();
   if (!client) return { skipped: true, reason: 'X credentials not configured' };
 
-  console.log('Posting tweet, length:', text.length);
+  const trimmed = text.length > 280 ? text.slice(0, 277) + '...' : text;
+  console.log('Posting tweet, original length:', text.length, '/ trimmed:', trimmed.length);
   const rwClient = client.readWrite;
-  const tweet = await rwClient.v2.tweet(text);
+  const tweet = await rwClient.v2.tweet(trimmed);
   return { success: true, tweetId: tweet.data.id };
 }
 
