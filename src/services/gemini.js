@@ -81,23 +81,28 @@ async function generateXText(posts, article) {
   const model = genAI.getGenerativeModel({ model: 'gemini-2.5-pro' });
   const tripDay = getTripDay();
 
+  const prefix = `DAY${tripDay} `;
+  const limit = 140 - prefix.length;
+
   const prompt = `以下は世界一周${tripDay}日目の旅行記事と元のログです。これをもとにX（旧Twitter）の投稿用テキストを1つ作成してください。
 
 # 元記事
 ${article}
 
 # ルール
-- 【厳守】140文字以内
+- 【厳守】${limit}文字以内（冒頭に「${prefix}」が自動付加されるため）
 - その日の一番印象的な出来事を中心に
 - 最後に「#世界一周」のハッシュタグのみ
 - 画像プレースホルダー（📷）は含めない
 - AIっぽい表現禁止（「〜だと感じました」「まさに〜」など）
 - 普通の人間がつぶやくような自然な口語体
-- URLは含めない`;
+- URLは含めない
+- 「DAY〇」は出力しない（自動で付加される）`;
 
   const result = await model.generateContent(prompt);
-  const text = result.response.text().trim();
-  return text.length > 140 ? text.slice(0, 137) + '...' : text;
+  const body = result.response.text().trim();
+  const full = prefix + (body.length > limit ? body.slice(0, limit - 3) + '...' : body);
+  return full.length > 140 ? full.slice(0, 137) + '...' : full;
 }
 
 module.exports = { generateArticle, generateThreadText, generateXText };
