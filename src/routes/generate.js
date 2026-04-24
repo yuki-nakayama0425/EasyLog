@@ -50,7 +50,12 @@ async function runGenerate(bot, dateStr = null) {
       }
     }
 
-    await bot.telegram.sendMessage(userId, article);
+    const firstNewline = article.indexOf('\n');
+    const articleTitle = firstNewline !== -1 ? article.slice(0, firstNewline).trim() : article.trim();
+    const articleBody = firstNewline !== -1 ? article.slice(firstNewline + 1).trimStart() : '';
+
+    await bot.telegram.sendMessage(userId, articleTitle);
+    if (articleBody) await bot.telegram.sendMessage(userId, articleBody);
     await bot.telegram.sendMessage(userId, `📱 スレッド用（500文字以内）\n\n${threadText}`);
     await bot.telegram.sendMessage(userId, `🐦 X用（140文字以内）\n\n${xText}`);
 
