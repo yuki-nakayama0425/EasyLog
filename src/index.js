@@ -1,6 +1,5 @@
 require('dotenv').config();
 const express = require('express');
-const cron = require('node-cron');
 const bot = require('./bot');
 const generateRoute = require('./routes/generate');
 const { runGenerate } = require('./routes/generate');
@@ -60,17 +59,6 @@ app.get('/debug/posts', async (req, res) => {
   res.json({ today: today.toISOString(), count: data.length, posts: data });
 });
 
-// 毎日22:00に記事生成
-cron.schedule('0 22 * * *', async () => {
-  console.log('Running daily article generation...');
-  try {
-    const res = await fetch(`http://localhost:${PORT}/generate`, { method: 'POST' });
-    const data = await res.json();
-    console.log('Article generated:', data.success);
-  } catch (err) {
-    console.error('Cron error:', err);
-  }
-}, { timezone: 'Asia/Tokyo' });
 
 app.listen(PORT, async () => {
   console.log(`Server running on port ${PORT}`);
