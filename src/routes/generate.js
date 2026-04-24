@@ -56,7 +56,7 @@ async function runGenerate(bot, dateStr = null) {
 
     await bot.telegram.sendMessage(userId, articleTitle);
     if (articleBody) await bot.telegram.sendMessage(userId, articleBody);
-    await bot.telegram.sendMessage(userId, `📱 スレッド用（500文字以内）\n\n${threadText}`);
+    await bot.telegram.sendMessage(userId, threadText);
     await bot.telegram.sendMessage(userId, `🐦 X用（140文字以内）\n\n${xText}`);
 
     try {

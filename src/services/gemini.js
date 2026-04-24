@@ -70,7 +70,8 @@ ${article}
 - 最後にハッシュタグ（#世界一周 #旅 など）
 - 画像プレースホルダー（📷）は含めない
 - AIっぽい表現禁止（「〜だと感じました」「まさに〜」など）
-- 普通の人間がつぶやくような自然な口語体`;
+- 普通の人間がつぶやくような自然な口語体
+- 絵文字は一切使わない`;
 
   const result = await model.generateContent(prompt);
   return result.response.text();
