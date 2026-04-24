@@ -4,24 +4,36 @@ const supabase = require('../db/supabase');
 const { generateArticle, generateThreadText, generateXText } = require('../services/gemini');
 const { postTweet } = require('../services/twitter');
 
-async function runGenerate(bot) {
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
+// dateStr: 'YYYY-MM-DD' in JST. If omitted, uses today JST.
+async function runGenerate(bot, dateStr = null) {
+  const JST_OFFSET = 9 * 60 * 60 * 1000;
+
+  let targetDate;
+  if (dateStr) {
+    const [y, m, d] = dateStr.split('-').map(Number);
+    targetDate = new Date(Date.UTC(y, m - 1, d) - JST_OFFSET);
+  } else {
+    const nowJST = new Date(Date.now() + JST_OFFSET);
+    targetDate = new Date(Date.UTC(nowJST.getUTCFullYear(), nowJST.getUTCMonth(), nowJST.getUTCDate()) - JST_OFFSET);
+  }
+  const nextDate = new Date(targetDate.getTime() + 24 * 60 * 60 * 1000);
+  const dateLabel = new Date(targetDate.getTime() + JST_OFFSET).toISOString().split('T')[0];
 
   const { data: posts, error } = await supabase
     .from('posts')
     .select('*')
-    .gte('created_at', today.toISOString())
+    .gte('created_at', targetDate.toISOString())
+    .lt('created_at', nextDate.toISOString())
     .order('created_at', { ascending: true });
 
   if (error) throw error;
-  if (!posts || posts.length === 0) return { message: '本日の投稿がありません。' };
+  if (!posts || posts.length === 0) return { message: `${dateLabel} の投稿がありません。` };
 
   const article = await generateArticle(posts);
 
   const { error: saveError } = await supabase.from('articles').insert({
     content: article,
-    date: today.toISOString().split('T')[0],
+    date: dateLabel,
   });
   if (saveError) throw saveError;
 
@@ -67,7 +79,8 @@ async function runGenerate(bot) {
 const createRouter = (bot) => {
   router.post('/', async (req, res) => {
     try {
-      const result = await runGenerate(bot);
+      const date = req.query.date || req.body.date || null;
+      const result = await runGenerate(bot, date);
       res.json(result);
     } catch (err) {
       console.error('Generate error:', err);
@@ -77,7 +90,8 @@ const createRouter = (bot) => {
 
   router.get('/', async (req, res) => {
     try {
-      const result = await runGenerate(bot);
+      const date = req.query.date || null;
+      const result = await runGenerate(bot, date);
       res.json(result);
     } catch (err) {
       console.error('Generate error:', err);

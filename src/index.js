@@ -34,9 +34,11 @@ bot.command('xtest', async (ctx) => {
 bot.command('generate', async (ctx) => {
   const allowedId = process.env.TELEGRAM_USER_ID;
   if (String(ctx.from.id) !== allowedId) return;
-  await ctx.reply('記事を生成中です...');
+  const args = ctx.message.text.split(' ');
+  const date = args[1] || null; // e.g. /generate 2026-04-23
+  await ctx.reply(`記事を生成中です...${date ? `（${date}）` : ''}`);
   try {
-    const result = await runGenerate(bot);
+    const result = await runGenerate(bot, date);
     if (result.message) await ctx.reply(result.message);
   } catch (err) {
     console.error('Generate command error:', err);
