@@ -44,7 +44,7 @@ bot.command('generate', async (ctx) => {
     if (result.message) await ctx.reply(result.message);
   } catch (err) {
     console.error('Generate command error:', err);
-    await ctx.reply('生成に失敗しました。');
+    await ctx.reply(`生成に失敗しました。\n\nエラー: ${err.message || String(err)}`);
   }
 });
 

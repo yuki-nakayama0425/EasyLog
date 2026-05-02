@@ -102,7 +102,8 @@ ${article}
 - 「DAY〇」は出力しない（自動で付加される）`;
 
   const result = await model.generateContent(prompt);
-  const body = result.response.text().trim();
+  // Remove newlines so Twitter doesn't count them as extra characters
+  const body = result.response.text().replace(/\s+/g, ' ').trim();
   const full = prefix + (body.length > limit ? body.slice(0, limit - 3) + '...' : body);
   return full.length > 140 ? full.slice(0, 137) + '...' : full;
 }

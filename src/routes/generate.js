@@ -40,10 +40,10 @@ async function runGenerate(bot, dateStr = null, tzStr = null) {
 
   const article = await generateArticle(posts, dateLabel);
 
-  const { error: saveError } = await supabase.from('articles').insert({
-    content: article,
-    date: dateLabel,
-  });
+  const { error: saveError } = await supabase.from('articles').upsert(
+    { content: article, date: dateLabel },
+    { onConflict: 'date' }
+  );
   if (saveError) throw saveError;
 
   const threadText = await generateThreadText(posts, article, dateLabel);
