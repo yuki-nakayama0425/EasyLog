@@ -75,22 +75,30 @@ async function generateThreadText(posts, article, dateLabel) {
   const model = genAI.getGenerativeModel({ model: 'gemini-2.5-pro' });
   const tripDay = getTripDay(dateLabel);
 
+  const countryMatch = article.match(/【世界一周\d+日目・(.+?)】/);
+  const countryName = countryMatch ? countryMatch[1] : '現在地';
+  const prefix = `【世界一周${tripDay}日目・${countryName}】`;
+  const limit = 500 - prefix.length;
+
   const prompt = `以下は世界一周${tripDay}日目の旅行記事と元のログです。これをもとにスレッド（Threads）用の投稿テキストを1つ作成してください。
 
 # 元記事
 ${article}
 
 # ルール
-- 500文字以内の1投稿
+- 【厳守】${limit}文字以内（冒頭に「${prefix}」が自動付加されるため）
 - その日の一番印象的な出来事を中心に
 - ハッシュタグは一切含めない
 - 画像プレースホルダー（📷）は含めない
 - AIっぽい表現禁止（「〜だと感じました」「まさに〜」など）
 - 普通の人間がつぶやくような自然な口語体
-- 絵文字は一切使わない`;
+- 絵文字は一切使わない
+- 「${prefix}」は出力しない（自動で付加される）`;
 
   const result = await withRetry(() => model.generateContent(prompt));
-  return result.response.text();
+  const body = result.response.text().trim();
+  const full = prefix + (body.length > limit ? body.slice(0, limit - 3) + '...' : body);
+  return full.length > 500 ? full.slice(0, 497) + '...' : full;
 }
 
 async function generateXText(posts, article, dateLabel) {
