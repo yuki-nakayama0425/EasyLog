@@ -9,6 +9,20 @@ const promptTemplate = fs.readFileSync(
   'utf8'
 );
 
+async function withRetry(fn, retries = 3) {
+  for (let attempt = 1; attempt <= retries; attempt++) {
+    try {
+      return await fn();
+    } catch (err) {
+      const is503 = err.message && err.message.includes('503');
+      if (!is503 || attempt === retries) throw err;
+      const wait = attempt * 10000;
+      console.log(`Gemini 503, retrying in ${wait / 1000}s (attempt ${attempt}/${retries})`);
+      await new Promise(r => setTimeout(r, wait));
+    }
+  }
+}
+
 function getTripDay(dateLabel) {
   const start = new Date(`${process.env.TRIP_START_DATE}T00:00:00+09:00`);
   const target = dateLabel
@@ -49,7 +63,7 @@ async function generateArticle(posts, dateLabel) {
 
   const prompt = promptTemplate.split('{logs}').join(logsText) + imageRule + titleRule;
 
-  const result = await model.generateContent(prompt);
+  const result = await withRetry(() => model.generateContent(prompt));
   return result.response.text()
     .replace(/^【タイトル】\n?/m, '')
     .replace(/^【本文】\n?/m, '')
@@ -75,7 +89,7 @@ ${article}
 - 普通の人間がつぶやくような自然な口語体
 - 絵文字は一切使わない`;
 
-  const result = await model.generateContent(prompt);
+  const result = await withRetry(() => model.generateContent(prompt));
   return result.response.text();
 }
 
@@ -101,7 +115,7 @@ ${article}
 - URLは含めない
 - 「DAY〇」は出力しない（自動で付加される）`;
 
-  const result = await model.generateContent(prompt);
+  const result = await withRetry(() => model.generateContent(prompt));
   // Remove newlines so Twitter doesn't count them as extra characters
   const body = result.response.text().replace(/\s+/g, ' ').trim();
   const full = prefix + (body.length > limit ? body.slice(0, limit - 3) + '...' : body);
