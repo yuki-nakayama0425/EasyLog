@@ -46,7 +46,11 @@ async function runGenerate(bot, dateStr = null) {
     for (const post of posts) {
       if (post.file_id) {
         photoCount++;
-        await bot.telegram.sendPhoto(userId, post.file_id, { caption: `📷 写真${photoCount}` });
+        try {
+          await bot.telegram.sendPhoto(userId, post.file_id, { caption: `📷 写真${photoCount}` });
+        } catch (photoErr) {
+          console.error(`sendPhoto error (写真${photoCount}):`, photoErr.message);
+        }
       }
     }
 
@@ -54,9 +58,16 @@ async function runGenerate(bot, dateStr = null) {
     const articleTitle = firstNewline !== -1 ? article.slice(0, firstNewline).trim() : article.trim();
     const articleBody = firstNewline !== -1 ? article.slice(firstNewline + 1).trimStart() : '';
 
+    const TELEGRAM_MAX = 4096;
+    const sendLong = async (text) => {
+      for (let i = 0; i < text.length; i += TELEGRAM_MAX) {
+        await bot.telegram.sendMessage(userId, text.slice(i, i + TELEGRAM_MAX));
+      }
+    };
+
     await bot.telegram.sendMessage(userId, articleTitle);
-    if (articleBody) await bot.telegram.sendMessage(userId, articleBody);
-    await bot.telegram.sendMessage(userId, threadText);
+    if (articleBody) await sendLong(articleBody);
+    await sendLong(threadText);
     await bot.telegram.sendMessage(userId, `🐦 X用（140文字以内）\n\n${xText}`);
 
     try {
