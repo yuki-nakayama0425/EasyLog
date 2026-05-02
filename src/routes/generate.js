@@ -4,20 +4,29 @@ const supabase = require('../db/supabase');
 const { generateArticle, generateThreadText, generateXText } = require('../services/gemini');
 const { postTweet } = require('../services/twitter');
 
-// dateStr: 'YYYY-MM-DD' in JST. If omitted, uses today JST.
-async function runGenerate(bot, dateStr = null) {
+// Parse timezone string like "+06:00" or "-05:30" into milliseconds offset.
+function parseTzOffset(tzStr) {
+  const match = tzStr && tzStr.match(/^([+-])(\d{2}):(\d{2})$/);
+  if (!match) return null;
+  const sign = match[1] === '+' ? 1 : -1;
+  return sign * (parseInt(match[2]) * 60 + parseInt(match[3])) * 60 * 1000;
+}
+
+// dateStr: 'YYYY-MM-DD'. tzStr: '+06:00' etc. Both default to JST if omitted.
+async function runGenerate(bot, dateStr = null, tzStr = null) {
   const JST_OFFSET = 9 * 60 * 60 * 1000;
+  const tzOffset = parseTzOffset(tzStr) ?? JST_OFFSET;
 
   let targetDate;
   if (dateStr) {
     const [y, m, d] = dateStr.split('-').map(Number);
-    targetDate = new Date(Date.UTC(y, m - 1, d) - JST_OFFSET);
+    targetDate = new Date(Date.UTC(y, m - 1, d) - tzOffset);
   } else {
-    const nowJST = new Date(Date.now() + JST_OFFSET);
-    targetDate = new Date(Date.UTC(nowJST.getUTCFullYear(), nowJST.getUTCMonth(), nowJST.getUTCDate()) - JST_OFFSET);
+    const nowLocal = new Date(Date.now() + tzOffset);
+    targetDate = new Date(Date.UTC(nowLocal.getUTCFullYear(), nowLocal.getUTCMonth(), nowLocal.getUTCDate()) - tzOffset);
   }
   const nextDate = new Date(targetDate.getTime() + 24 * 60 * 60 * 1000);
-  const dateLabel = new Date(targetDate.getTime() + JST_OFFSET).toISOString().split('T')[0];
+  const dateLabel = new Date(targetDate.getTime() + tzOffset).toISOString().split('T')[0];
 
   const { data: posts, error } = await supabase
     .from('posts')

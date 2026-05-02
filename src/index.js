@@ -36,9 +36,11 @@ bot.command('generate', async (ctx) => {
   if (String(ctx.from.id) !== allowedId) return;
   const args = ctx.message.text.split(' ');
   const date = args[1] || null; // e.g. /generate 2026-04-23
-  await ctx.reply(`記事を生成中です...${date ? `（${date}）` : ''}`);
+  const tz = args[2] || null;   // e.g. /generate 2026-04-23 +06:00
+  const label = [date, tz].filter(Boolean).join(' ');
+  await ctx.reply(`記事を生成中です...${label ? `（${label}）` : ''}`);
   try {
-    const result = await runGenerate(bot, date);
+    const result = await runGenerate(bot, date, tz);
     if (result.message) await ctx.reply(result.message);
   } catch (err) {
     console.error('Generate command error:', err);
