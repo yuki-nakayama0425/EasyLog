@@ -9,16 +9,18 @@ const promptTemplate = fs.readFileSync(
   'utf8'
 );
 
-function getTripDay() {
+function getTripDay(dateLabel) {
   const start = new Date(`${process.env.TRIP_START_DATE}T00:00:00+09:00`);
-  const now = new Date();
-  const diffMs = now - start;
+  const target = dateLabel
+    ? new Date(`${dateLabel}T00:00:00+09:00`)
+    : new Date(Date.now() + 9 * 60 * 60 * 1000);
+  const diffMs = target - start;
   return Math.floor(diffMs / (1000 * 60 * 60 * 24)) + 1;
 }
 
-async function generateArticle(posts) {
+async function generateArticle(posts, dateLabel) {
   const model = genAI.getGenerativeModel({ model: 'gemini-2.5-pro' });
-  const tripDay = getTripDay();
+  const tripDay = getTripDay(dateLabel);
 
   let photoCount = 0;
   const logsText = posts
@@ -55,9 +57,9 @@ async function generateArticle(posts) {
     .trim();
 }
 
-async function generateThreadText(posts, article) {
+async function generateThreadText(posts, article, dateLabel) {
   const model = genAI.getGenerativeModel({ model: 'gemini-2.5-pro' });
-  const tripDay = getTripDay();
+  const tripDay = getTripDay(dateLabel);
 
   const prompt = `以下は世界一周${tripDay}日目の旅行記事と元のログです。これをもとにスレッド（Threads）用の投稿テキストを1つ作成してください。
 
@@ -77,9 +79,9 @@ ${article}
   return result.response.text();
 }
 
-async function generateXText(posts, article) {
+async function generateXText(posts, article, dateLabel) {
   const model = genAI.getGenerativeModel({ model: 'gemini-2.5-pro' });
-  const tripDay = getTripDay();
+  const tripDay = getTripDay(dateLabel);
 
   const prefix = `DAY${tripDay} `;
   const limit = 140 - prefix.length;

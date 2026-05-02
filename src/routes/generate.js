@@ -29,7 +29,7 @@ async function runGenerate(bot, dateStr = null) {
   if (error) throw error;
   if (!posts || posts.length === 0) return { message: `${dateLabel} の投稿がありません。` };
 
-  const article = await generateArticle(posts);
+  const article = await generateArticle(posts, dateLabel);
 
   const { error: saveError } = await supabase.from('articles').insert({
     content: article,
@@ -37,8 +37,8 @@ async function runGenerate(bot, dateStr = null) {
   });
   if (saveError) throw saveError;
 
-  const threadText = await generateThreadText(posts, article);
-  const xText = await generateXText(posts, article);
+  const threadText = await generateThreadText(posts, article, dateLabel);
+  const xText = await generateXText(posts, article, dateLabel);
 
   const userId = process.env.TELEGRAM_USER_ID;
   if (bot && userId) {
